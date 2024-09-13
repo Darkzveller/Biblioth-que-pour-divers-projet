@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "Timer.h"
+#include "TIMER.h"
 extern volatile bool timerFlag ;  // Flag déclenché lors de l'interruption
 
 

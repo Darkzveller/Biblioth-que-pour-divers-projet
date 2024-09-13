@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
-#ifndef _Timer_H
-#define _Timer_H
+#ifndef _TIMER_H
+#define _TIMER_H
 
 
 
