@@ -66,8 +66,9 @@ void moteur::stop()
 #ifdef COMMANDE_UNIPOLAIRE
     speed = pow(2, 10) / 2; // Met à jour la vitesse
     deltaSpeed = pow(2, 10) - speed;
-    ledcWrite(channelA, speed);
-    ledcWrite(channelB, deltaSpeed);
+    ledcWrite(channelA, 0);
+    ledcWrite(channelB, 4095);
+    
 
 #endif
 
@@ -80,6 +81,7 @@ void moteur::stop()
     if (DEBUG_MOTOR)
     {
         Serial.printf("Le %s s'est arrerter", nameMotor.c_str());
+        Serial.printf(" La pwm de %d et le delta est ", speed,deltaSpeed);
         Serial.println();
     }
 }
