@@ -16,5 +16,8 @@
 #define DEBUG_ENCODEUR_VITESSE false
 #define DEBUG_ENCODEUR_RESET false
 
+#define DEBUG_TIMER_0_INIT false
+#define DEBUG_TIMER_0_FLAG false
+
 
 #endif 
