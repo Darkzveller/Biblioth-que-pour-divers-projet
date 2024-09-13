@@ -2,6 +2,11 @@
 #include "../ID.h" // Remonte d'un niveau pour atteindre lib
 #include "EncoderManager.h"
 
+extern float Te;
+
+float Echantillon_ms_precedent = 0;
+const unsigned long Intervalle_T = Te;
+
 // Constructeur avec les pins des encodeurs gauche et droit
 EncoderManager::EncoderManager(int pinA, int pinB)
     : pinA(pinA), pinB(pinB) {}
@@ -15,14 +20,13 @@ void EncoderManager::init(String nameEncoder, float wheel_size_mm, float TIC_ONE
     encoder.attachHalfQuad(pinA, pinB);
     encoder.clearCount();
 
-    if (DEBUG_ENCODEUR)
+    if (DEBUG_ENCODEUR_INIT)
     {
-        // Serial.printf(" %s à été initialisé", nameEncodeur.c_str());
-        // Serial.println();
+        Serial.printf(" %s à été initialisé", nameEncodeur.c_str());
+        Serial.println();
     }
 }
 
-// Méthode pour obtenir la position de l'encodeur gauche
 long EncoderManager::getTickPosition()
 {
     long val_encodeur = encoder.getCount();
@@ -38,7 +42,7 @@ float EncoderManager::getDistance()
 {
     long val_tick = EncoderManager::getTickPosition();
     float number_tour = val_tick * 1.0 / TIC_UN_TOUR;
-    if (DEBUG_ENCODEUR_TOUR)
+    if (DEBUG_ENCODEUR_DISTANCE)
     {
         Serial.printf("Le %s a fait %f tour", nameEncodeur.c_str(), number_tour);
         Serial.println();
@@ -46,11 +50,56 @@ float EncoderManager::getDistance()
     return number_tour;
 }
 
-// Méthode pour réinitialiser la position de l'encodeur gauche
+float EncoderManager::getAngle()
+{
+    float val_distance = EncoderManager::getDistance();
+    float angle_radians = 2.0 * M_PI * val_distance / 1.0;
+    if (DEBUG_ENCODEUR_Angle)
+    {
+        Serial.printf("Le %s a fait %f radians", nameEncodeur.c_str(), angle_radians);
+        Serial.println();
+    }
+    return angle_radians;
+}
+
+float EncoderManager::getVitesse()
+{
+    float angle_actuelle = EncoderManager::getAngle(), vitesse;
+    // float angle_actuelle = EncoderManager::getAngle();
+    // float vitesse_mm_par_s = (angle_actuelle-angle_precedent)/Te;
+    // if (DEBUG_ENCODEUR_Angle)
+    // {
+    //     Serial.printf("Le %s a fait %f radians", nameEncodeur.c_str(), angle_radians);
+    //     Serial.println();
+    // }
+    if (millis() >= (Echantillon_ms_precedent + Intervalle_T))
+    {
+        Echantillon_ms_precedent = millis();
+        angle_actuelle = EncoderManager::getAngle();
+        vitesse = (angle_actuelle - angle_precedent) / Te;
+        angle_precedent = angle_actuelle;
+        if (DEBUG_ENCODEUR_VITESSE)
+        {
+            Serial.printf("Angle actu %f  angle prec %f", angle_actuelle, angle_precedent);
+            Serial.printf(" Vitesse %f en mm par ms", vitesse);
+            Serial.println();
+        }
+    }
+    return vitesse;
+}
+
+void EncoderManager::showTickPosition()
+{
+    long val_encodeur = encoder.getCount();
+
+    Serial.printf("Le %s a pour valeur actuelle %d", nameEncodeur.c_str(), val_encodeur);
+    Serial.println();
+}
+// Je suis partie du principe que ca fonctionner :)
 void EncoderManager::resetPosition()
 {
     encoder.clearCount();
-    if (DEBUG_ENCODEUR)
+    if (DEBUG_ENCODEUR_RESET)
     {
         Serial.printf(" %s à été reset", nameEncodeur.c_str());
         Serial.println();

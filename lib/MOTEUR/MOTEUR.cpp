@@ -32,18 +32,30 @@ void moteur::init(int PINA, int PINB, int channel_pwm, int frequence, int resolu
     digitalWrite(pinB, false);
 #endif
 
-    if (DEBUG_MOTOR)
+    if (DEBUG_MOTOR_INIT)
     {
         Serial.println("Le " + nameMotor + " a été initialisé");
         Serial.println();
     }
 }
 
-void moteur::setSpeed(int motorSpeed)
+void moteur::setSpeed(int motorSpeed)// En pourcentage
 {
-    speed = motorSpeed; // Met à jour la vitesse
-    deltaSpeed = pow(2, 10) - speed;
+    if (motorSpeed >= 100)
+    {
+        motorSpeed = 100;
+    }
+    if (motorSpeed <= 0)
+    {
+        motorSpeed = 0;
+    }
+   
+    speed = motorSpeed * (pow(2, resolution) - 1) / 100;
+
+    // speed = motorSpeed; // Met à jour la vitesse
 #ifdef COMMANDE_UNIPOLAIRE
+
+    deltaSpeed = (pow(2, resolution) - 1) - speed;
     ledcWrite(channelA, speed);
     ledcWrite(channelB, deltaSpeed);
 
@@ -54,7 +66,7 @@ void moteur::setSpeed(int motorSpeed)
 
 #endif
 
-    if (DEBUG_MOTOR)
+    if (DEBUG_MOTOR_VITESSE)
     {
         Serial.printf("Le %s a une pwm de %d", nameMotor.c_str(), speed);
         Serial.println();
@@ -64,11 +76,10 @@ void moteur::stop()
 {
 
 #ifdef COMMANDE_UNIPOLAIRE
-    speed = pow(2, 10) / 2; // Met à jour la vitesse
-    deltaSpeed = pow(2, 10) - speed;
-    ledcWrite(channelA, 0);
-    ledcWrite(channelB, 4095);
-    
+    speed = pow(2, resolution) / 2; // Met à jour la vitesse
+    deltaSpeed = pow(2, resolution) - speed;
+    ledcWrite(channelA, speed);
+    ledcWrite(channelB, deltaSpeed);
 
 #endif
 
@@ -78,10 +89,10 @@ void moteur::stop()
 
 #endif
 
-    if (DEBUG_MOTOR)
+    if (DEBUG_MOTOR_STOP)
     {
         Serial.printf("Le %s s'est arrerter", nameMotor.c_str());
-        Serial.printf(" La pwm de %d et le delta est ", speed,deltaSpeed);
+        Serial.printf(" La pwm de %d et le delta est %d", speed, deltaSpeed);
         Serial.println();
     }
 }

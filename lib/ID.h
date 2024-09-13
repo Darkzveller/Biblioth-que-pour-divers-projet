@@ -4,10 +4,17 @@
 #define DEBUG_ON
 #define DEBUG_OFF
 
-#define DEBUG_MOTOR true
+#define DEBUG_MOTOR_INIT false
+#define DEBUG_MOTOR_VITESSE false
+#define DEBUG_MOTOR_STOP false
+#define DEBUG_MOTOR false
 
-#define DEBUG_ENCODEUR true
+#define DEBUG_ENCODEUR_INIT false
 #define DEBUG_ENCODEUR_TICK false
-#define DEBUG_ENCODEUR_TOUR false
+#define DEBUG_ENCODEUR_DISTANCE false
+#define DEBUG_ENCODEUR_Angle false
+#define DEBUG_ENCODEUR_VITESSE false
+#define DEBUG_ENCODEUR_RESET false
+
 
 #endif 
