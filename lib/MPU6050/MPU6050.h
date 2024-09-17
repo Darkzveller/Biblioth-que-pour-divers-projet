@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <math.h>
 #include <Wire.h>
 #include <String.h>
 #include <Adafruit_MPU6050.h>
@@ -16,7 +17,9 @@ private:
    
 public:
 void init();
-void TEST();
+double getPosAngulaireRad();
+ void getPosAngulaireDegres();
+
 };
 
 #endif // ENCODERMANAGER_H
