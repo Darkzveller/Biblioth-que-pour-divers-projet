@@ -1,20 +1,16 @@
 #include <Arduino.h>
-#include "TIMER.h"
-extern volatile bool timerFlag ;  // Flag déclenché lors de l'interruption
-
-
-void setup() {
-    Serial.begin(115200);
-  timer_init(0, 0.0025);
+#include "MPU6050.h"
+MPU6050 jsp;
+ void setup()
+{
+  // put your setup code here, to run once:
+  Serial.begin(115200);
+  Serial.printf("Bonjour \n\r");
+  jsp.init();
 }
 
-void loop() {
-  // Si le flag du timer est déclenché, effectuer une action
-  if (timerFlag) {
-static int i =0;
-i++;
-Serial.println(i);    timerFlag = false;  // Réinitialiser le flag
-  }
-
-  // Autres tâches possibles dans la boucle principale
+void loop()
+{
+  jsp.TEST();
+  delay(10);
 }

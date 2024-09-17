@@ -19,5 +19,11 @@
 #define DEBUG_TIMER_0_INIT false
 #define DEBUG_TIMER_0_FLAG false
 
+#define DEBUG_ASSERV_ERREUR false
+#define DEBUG_ASSERV_PARAMETRE_ENTRE false
+#define DEBUG_ASSERV_P false
+#define DEBUG_ASSERV_D false
+#define DEBUG_ASSERV_I false
+
 
 #endif 
