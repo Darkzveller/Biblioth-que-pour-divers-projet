@@ -43,6 +43,53 @@ double asservissement::calcul_asserv(double consigne, double observation, int re
 
   return sortie;
 }
+
+double asservissement::calcul_asserv_gyro(double consigne, double observation, int resolution_pwm_bits, double coeff_P, double dt, double coeff_D, double coeff_I, double integral_limit, double saturation)
+{
+  double sortie;
+  double scale;
+
+  resolution_pwm_bits = pow(2, resolution_pwm_bits) - 1;
+  double erreur = consigne - observation;
+
+  double proportionnel = erreur * coeff_P;
+
+  double deriver = coeff_D * dt;
+
+  somme_integral_gyro += erreur * dt;
+  if (somme_integral_gyro > integral_limit)
+  {
+    somme_integral_gyro = integral_limit;
+  }
+  else if (somme_integral_gyro < -integral_limit)
+  {
+    somme_integral_gyro = -integral_limit;
+  }
+  double integral = coeff_I * somme_integral_gyro;
+
+  double commande = proportionnel + deriver + integral;
+
+  erreur_prec_gyro = erreur;
+
+  if (commande > 0)
+  {
+    if (commande > saturation)
+    {
+      sortie = saturation;
+    }
+  }
+  else
+  {
+    if (commande < -saturation)
+    {
+      sortie = -saturation;
+    }
+  }
+  // sortie =sortie *resolution_pwm_bits;
+  
+  return sortie;
+}
+
 /*  void asservissement(float position)
   {
     float commande;

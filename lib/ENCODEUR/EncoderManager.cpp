@@ -32,7 +32,7 @@ long EncoderManager::getTickPosition()
     long val_encodeur = encoder.getCount();
     if (DEBUG_ENCODEUR_TICK)
     {
-        Serial.printf("Le %s a pour valeur actuelle %d", nameEncodeur.c_str(), val_encodeur);
+        Serial.printf("Le %s  %d", nameEncodeur.c_str(), val_encodeur);
         Serial.println();
     }
     return val_encodeur;
@@ -92,7 +92,7 @@ void EncoderManager::showTickPosition()
 {
     long val_encodeur = encoder.getCount();
 
-    Serial.printf("Le %s a pour valeur actuelle %d", nameEncodeur.c_str(), val_encodeur);
+    Serial.printf("Le %s  %d", nameEncodeur.c_str(), val_encodeur);
     Serial.println();
 }
 // Je suis partie du principe que ca fonctionner :)
