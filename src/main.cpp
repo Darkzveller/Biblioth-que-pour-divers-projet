@@ -92,6 +92,12 @@ void setup()
                     display: flex;
                     gap: 10px; /* Espacement entre les boutons */
                 }
+                .boost-button-container {
+                    position: absolute;
+                    top: 50%;
+                    right: 20px;
+                    transform: translateY(-50%);
+                }
                 button {
                     padding: 10px 20px;
                     font-size: 16px;
@@ -136,6 +142,8 @@ void setup()
             <div class="controls">
                 <button id="ledButton">Asser Actif</button>
                 <button id="powerButton">Power On</button>
+            </div>
+            <div class="boost-button-container">
                 <button id="boostButton">Boost Vitesse</button>
             </div>
             <div class="joystick-container">
@@ -146,9 +154,9 @@ void setup()
             <script>
                 function updateBatteryDisplay(voltage) {
                     const batteryDisplay = document.getElementById('batteryDisplay');
-                    if (voltage > 9) {
+                    if (voltage >= 9) {
                         batteryDisplay.style.borderColor = 'green';
-                    } else if (voltage >= 7 && voltage <= 9) {
+                    } else if (voltage >= 7 && voltage < 9) {
                         batteryDisplay.style.borderColor = 'orange';
                     } else {
                         batteryDisplay.style.borderColor = 'red';
@@ -350,5 +358,4 @@ void setup()
 
 void loop()
 {
-    // Aucun code spécifique dans la boucle loop pour cet exemple
-}
+batteryVoltage = 9;}
