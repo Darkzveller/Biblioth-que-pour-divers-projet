@@ -21,6 +21,10 @@ bool boostEnabled = false; // Variable pour l'état du boost de vitesse
 // Variable prédéfinie pour la tension de batterie
 float batteryVoltage = 6.5; // Exemple de valeur de tension, modifiable
 
+// Variables pour les seuils de tension
+float highVoltageThreshold = 9.0;
+float mediumVoltageThreshold = 7.0;
+
 void setup()
 {
     // Initialisation de la communication série
@@ -152,16 +156,29 @@ void setup()
                 </div>
             </div>
             <script>
+                // Variables globales pour les seuils de tension
+                let highVoltageThreshold = 9.0;
+                let mediumVoltageThreshold = 7.0;
+
                 function updateBatteryDisplay(voltage) {
                     const batteryDisplay = document.getElementById('batteryDisplay');
-                    if (voltage >= 9) {
+                    if (voltage >= highVoltageThreshold) {
                         batteryDisplay.style.borderColor = 'green';
-                    } else if (voltage >= 7 && voltage < 9) {
+                    } else if (voltage >= mediumVoltageThreshold && voltage < highVoltageThreshold) {
                         batteryDisplay.style.borderColor = 'orange';
                     } else {
                         batteryDisplay.style.borderColor = 'red';
                     }
                 }
+
+                function fetchThresholds() {
+                    fetch('/get-thresholds').then(response => response.json()).then(data => {
+                        highVoltageThreshold = data.high;
+                        mediumVoltageThreshold = data.medium;
+                    });
+                }
+
+                fetchThresholds();
 
                 fetch('/get-battery').then(response => response.text()).then(data => {
                     const voltage = parseFloat(data);
@@ -283,6 +300,12 @@ void setup()
         request->send(200, "text/html", html);
     });
 
+    // API pour récupérer les seuils de tension
+    server.on("/get-thresholds", HTTP_GET, [](AsyncWebServerRequest *request) {
+        String response = "{\"high\":" + String(highVoltageThreshold) + ",\"medium\":" + String(mediumVoltageThreshold) + "}";
+        request->send(200, "application/json", response);
+    });
+
     // API pour récupérer l'état de la LED
     server.on("/get-asser", HTTP_GET, [](AsyncWebServerRequest *request)
     {
@@ -358,4 +381,6 @@ void setup()
 
 void loop()
 {
-batteryVoltage = 9;}
+    // Exemple de mise à jour de la tension de la batterie
+    batteryVoltage = 9.0; // Remplacez cette ligne par la lecture réelle de la tension de la batterie
+}
