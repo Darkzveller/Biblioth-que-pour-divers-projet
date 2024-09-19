@@ -3,8 +3,8 @@
 #include <ESPAsyncWebServer.h>
 
 // Informations du point d'accès
-const char* ssid = "Test wifi";
-const char* password = "123456789";
+const char *ssid = "Test wifi";
+const char *password = "123456789";
 
 // Déclaration du serveur web sur le port 80
 AsyncWebServer server(80);
@@ -18,36 +18,38 @@ bool asserActif = false;
 bool powerOn = false;
 
 // Variable prédéfinie pour la tension de batterie
-float batteryVoltage = 6.5;  // Exemple de valeur de tension, modifiable
+float batteryVoltage = 6.5; // Exemple de valeur de tension, modifiable
 
-void setup() {
-  // Initialisation de la communication série
-  Serial.begin(115200);
+void setup()
+{
+    // Initialisation de la communication série
+    Serial.begin(115200);
 
-  // Configurer le GPIO 2 en mode sortie pour la LED
-  pinMode(ledPin, OUTPUT);
-  digitalWrite(ledPin, LOW);  // Éteindre la LED au démarrage
+    // Configurer le GPIO 2 en mode sortie pour la LED
+    pinMode(ledPin, OUTPUT);
+    digitalWrite(ledPin, LOW); // Éteindre la LED au démarrage
 
-  // Initialisation du point d'accès Wi-Fi
-  WiFi.softAP(ssid, password);
+    // Initialisation du point d'accès Wi-Fi
+    WiFi.softAP(ssid, password);
 
-  // Afficher l'adresse IP du serveur dans le moniteur série
-  Serial.println();
-  Serial.println("Point d'accès Wi-Fi démarré");
-  Serial.print("SSID: ");
-  Serial.println(ssid);
-  Serial.print("Mot de passe: ");
-  Serial.println(password);
+    // Afficher l'adresse IP du serveur dans le moniteur série
+    Serial.println();
+    Serial.println("Point d'accès Wi-Fi démarré");
+    Serial.print("SSID: ");
+    Serial.println(ssid);
+    Serial.print("Mot de passe: ");
+    Serial.println(password);
 
-  // Attendre un court instant pour obtenir l'adresse IP
-  delay(1000);
+    // Attendre un court instant pour obtenir l'adresse IP
+    delay(1000);
 
-  // Afficher l'adresse IP dans le moniteur série
-  Serial.print("Adresse IP du point d'accès : ");
-  Serial.println(WiFi.softAPIP());
+    // Afficher l'adresse IP dans le moniteur série
+    Serial.print("Adresse IP du point d'accès : ");
+    Serial.println(WiFi.softAPIP());
 
-  // Page web simplifiée avec l'affichage de la tension, les boutons et le joystick
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+    // Page web simplifiée avec l'affichage de la tension, les boutons et le joystick
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+              {
     String html = R"rawliteral(
     <!DOCTYPE html>
 <html lang="fr">
@@ -56,6 +58,12 @@ void setup() {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IHM Gyropode</title>
     <style>
+    h1 {
+    margin: 0;
+    font-size: 24px;
+    text-align: center;
+}
+
         body {
             margin: 0;
             background-color: #f0f0f0;
@@ -121,6 +129,7 @@ void setup() {
     </style>
 </head>
 <body>
+    <h1>IHM Gyropode</h1> <!-- Titre affiché sur la page web -->
     <div class="battery" id="batteryDisplay">
         <div class="battery-text">Tension: <span id="batteryVoltage">0.0V</span></div>
     </div>
@@ -247,54 +256,53 @@ void setup() {
 </body>
 </html>
     )rawliteral";
-    request->send(200, "text/html", html);
-  });
+    request->send(200, "text/html", html); });
 
-  // API pour récupérer la tension de batterie
-  server.on("/get-battery", HTTP_GET, [](AsyncWebServerRequest *request){
-    String voltage = String(batteryVoltage, 2);  // Convertir la tension en chaîne avec 2 décimales
-    request->send(200, "text/plain", voltage);   // Envoyer la valeur de la tension
-  });
+    // API pour récupérer la tension de batterie
+    server.on("/get-battery", HTTP_GET, [](AsyncWebServerRequest *request)
+              {
+                  String voltage = String(batteryVoltage, 2); // Convertir la tension en chaîne avec 2 décimales
+                  request->send(200, "text/plain", voltage);  // Envoyer la valeur de la tension
+              });
 
-  // API pour récupérer l'état du bouton "Asser"
-  server.on("/get-asser", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(200, "text/plain", asserActif ? "true" : "false");
-  });
+    // API pour récupérer l'état du bouton "Asser"
+    server.on("/get-asser", HTTP_GET, [](AsyncWebServerRequest *request)
+              { request->send(200, "text/plain", asserActif ? "true" : "false"); });
 
-  // API pour récupérer l'état du bouton "Power"
-  server.on("/get-power", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(200, "text/plain", powerOn ? "true" : "false");
-  });
+    // API pour récupérer l'état du bouton "Power"
+    server.on("/get-power", HTTP_GET, [](AsyncWebServerRequest *request)
+              { request->send(200, "text/plain", powerOn ? "true" : "false"); });
 
-  // Activer/désactiver la LED lorsque l'utilisateur clique sur le bouton
-  server.on("/toggle-led", HTTP_GET, [](AsyncWebServerRequest *request){
+    // Activer/désactiver la LED lorsque l'utilisateur clique sur le bouton
+    server.on("/toggle-led", HTTP_GET, [](AsyncWebServerRequest *request)
+              {
     asserActif = !asserActif; // Inverser l'état du bouton "Asser"
     int ledState = digitalRead(ledPin);
     digitalWrite(ledPin, !ledState); // Inverser l'état de la LED
-    request->send(200, "text/plain", "LED toggled");
-  });
+    request->send(200, "text/plain", "LED toggled"); });
 
-  // Activer/désactiver la puissance lorsque l'utilisateur clique sur le bouton
-  server.on("/toggle-power", HTTP_GET, [](AsyncWebServerRequest *request){
+    // Activer/désactiver la puissance lorsque l'utilisateur clique sur le bouton
+    server.on("/toggle-power", HTTP_GET, [](AsyncWebServerRequest *request)
+              {
     powerOn = !powerOn; // Inverser l'état du bouton "Power"
-    request->send(200, "text/plain", "Power toggled");
-  });
+    request->send(200, "text/plain", "Power toggled"); });
 
-  // Recevoir les données du joystick
-  server.on("/joystick", HTTP_GET, [](AsyncWebServerRequest *request){
+    // Recevoir les données du joystick
+    server.on("/joystick", HTTP_GET, [](AsyncWebServerRequest *request)
+              {
     String x = request->getParam("x")->value();
     String y = request->getParam("y")->value();
     Serial.print("Joystick X: ");
     Serial.print(x);
     Serial.print(", Y: ");
     Serial.println(y);
-    request->send(200, "text/plain", "Joystick data received");
-  });
+    request->send(200, "text/plain", "Joystick data received"); });
 
-  // Démarrage du serveur
-  server.begin();
+    // Démarrage du serveur
+    server.begin();
 }
 
-void loop() {
-  // Rien à faire ici, tout est géré par les événements du serveur web
+void loop()
+{
+    // Rien à faire ici, tout est géré par les événements du serveur web
 }
