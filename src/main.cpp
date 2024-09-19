@@ -16,6 +16,7 @@ bool isLedOn = false; // Variable pour suivre l'état de la LED
 // Variables pour l'état des boutons
 bool asserActif = false;
 bool powerOn = false;
+bool boostEnabled = false; // Variable pour l'état du boost de vitesse
 
 // Variable prédéfinie pour la tension de batterie
 float batteryVoltage = 6.5; // Exemple de valeur de tension, modifiable
@@ -104,8 +105,8 @@ void setup()
                     height: 200px;
                 }
                 .joystick {
-                    width: 100%;
-                    height: 100%;
+                    width: 65%;
+                    height: 65%;
                     border-radius: 50%;
                     background-color: #ccc;
                     border: 3px solid #333;
@@ -135,6 +136,7 @@ void setup()
             <div class="controls">
                 <button id="ledButton">Asser Actif</button>
                 <button id="powerButton">Power On</button>
+                <button id="boostButton">Boost Vitesse</button>
             </div>
             <div class="joystick-container">
                 <div class="joystick">
@@ -177,6 +179,15 @@ void setup()
                             powerButton.innerText = 'Power On';
                         }
                     });
+
+                    fetch('/get-boost').then(response => response.text()).then(data => {
+                        const boostButton = document.getElementById('boostButton');
+                        if (data === 'true') {
+                            boostButton.innerText = 'Boost Désactivé';
+                        } else {
+                            boostButton.innerText = 'Boost Vitesse';
+                        }
+                    });
                 }
 
                 updateButtonStates();
@@ -189,6 +200,12 @@ void setup()
 
                 document.getElementById('powerButton').addEventListener('click', () => {
                     fetch('/toggle-power').then(() => {
+                        updateButtonStates();
+                    });
+                });
+
+                document.getElementById('boostButton').addEventListener('click', () => {
+                    fetch('/toggle-boost').then(() => {
                         updateButtonStates();
                     });
                 });
@@ -258,70 +275,80 @@ void setup()
         request->send(200, "text/html", html);
     });
 
-    // API pour récupérer la tension de batterie
-    server.on("/get-battery", HTTP_GET, [](AsyncWebServerRequest *request)
-    {
-        String voltage = String(batteryVoltage, 2); // Convertir la tension en chaîne avec 2 décimales
-        request->send(200, "text/plain", voltage);  // Envoyer la valeur de la tension
-    });
-
-    // API pour récupérer l'état du bouton "Asser"
+    // API pour récupérer l'état de la LED
     server.on("/get-asser", HTTP_GET, [](AsyncWebServerRequest *request)
     {
         String state = asserActif ? "true" : "false";
-        // Serial.print("État du bouton Asser : ");
-        // Serial.println(state);
         request->send(200, "text/plain", state);
     });
 
-    // API pour récupérer l'état du bouton "Power"
+    // API pour basculer l'état de la LED
+    server.on("/toggle-led", HTTP_GET, [](AsyncWebServerRequest *request)
+    {
+        asserActif = !asserActif; // Inverser l'état de la LED
+        Serial.print("Bouton Asser pressé. Nouvel état : ");
+        Serial.println(asserActif ? "Actif" : "Inactif");
+        int ledState = digitalRead(ledPin);
+        digitalWrite(ledPin, !ledState); // Changer l'état de la LED
+        request->send(200, "text/plain", asserActif ? "Actif" : "Inactif");
+    });
+
+    // API pour récupérer l'état de l'alimentation
     server.on("/get-power", HTTP_GET, [](AsyncWebServerRequest *request)
     {
         String state = powerOn ? "true" : "false";
-        // Serial.print("État du bouton Power : ");
-        // Serial.println(state);
         request->send(200, "text/plain", state);
     });
 
-    // Activer/désactiver la LED lorsque l'utilisateur clique sur le bouton
-    server.on("/toggle-led", HTTP_GET, [](AsyncWebServerRequest *request)
-    {
-        asserActif = !asserActif; // Inverser l'état du bouton "Asser"
-        int ledState = digitalRead(ledPin);
-        digitalWrite(ledPin, !ledState); // Changer l'état de la LED
-        // Serial.print("Bouton Asser pressé. État de la LED: ");
-        // Serial.println(ledState ? "ON" : "OFF");
-        Serial.print("Nouvel état du bouton Asser : ");
-        Serial.println(asserActif ? "Actif" : "Inactif");
-        request->send(200, "text/plain", "LED toggled");
-    });
-
-    // Activer/désactiver la puissance lorsque l'utilisateur clique sur le bouton
+    // API pour basculer l'état de l'alimentation
     server.on("/toggle-power", HTTP_GET, [](AsyncWebServerRequest *request)
     {
-        powerOn = !powerOn; // Inverser l'état du bouton "Power"
+        powerOn = !powerOn; // Inverser l'état de l'alimentation
         Serial.print("Bouton Power pressé. Nouvel état : ");
-        Serial.println(powerOn ? "ON" : "OFF");
-        request->send(200, "text/plain", "Power toggled");
+        Serial.println(powerOn ? "On" : "Off");
+        request->send(200, "text/plain", powerOn ? "On" : "Off");
     });
 
-    // Recevoir les données du joystick
+    // API pour récupérer l'état du boost de vitesse
+    server.on("/get-boost", HTTP_GET, [](AsyncWebServerRequest *request)
+    {
+        String state = boostEnabled ? "true" : "false";
+        request->send(200, "text/plain", state);
+    });
+
+    // API pour activer/désactiver le boost de vitesse
+    server.on("/toggle-boost", HTTP_GET, [](AsyncWebServerRequest *request)
+    {
+        boostEnabled = !boostEnabled; // Inverser l'état du boost de vitesse
+        Serial.print("Bouton Boost Vitesse pressé. Nouvel état : ");
+        Serial.println(boostEnabled ? "Activé" : "Désactivé");
+        request->send(200, "text/plain", boostEnabled ? "Activé" : "Désactivé");
+    });
+
+    // API pour obtenir la tension de la batterie
+    server.on("/get-battery", HTTP_GET, [](AsyncWebServerRequest *request)
+    {
+        String voltage = String(batteryVoltage);
+        request->send(200, "text/plain", voltage);
+    });
+
+    // API pour recevoir les données du joystick
     server.on("/joystick", HTTP_GET, [](AsyncWebServerRequest *request)
     {
         String x = request->getParam("x")->value();
         String y = request->getParam("y")->value();
         Serial.print("Joystick X: ");
         Serial.print(x);
-        Serial.print(", Y: ");
+        Serial.print(" Y: ");
         Serial.println(y);
-        request->send(200, "text/plain", "Joystick data received");
+        request->send(200, "text/plain", "Joystick Data Received");
     });
 
-    // Démarrage du serveur
+    // Lancer le serveur
     server.begin();
 }
 
 void loop()
 {
-    // Rien à faire ici, tout est géré par les événements du serveur web
+    // Aucun code spécifique dans la boucle loop pour cet exemple
 }
