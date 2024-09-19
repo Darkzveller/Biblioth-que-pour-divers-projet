@@ -46,7 +46,7 @@ void setup() {
   Serial.print("Adresse IP du point d'accès : ");
   Serial.println(WiFi.softAPIP());
 
-  // Page web simplifiée avec seulement l'affichage de la tension et les boutons
+  // Page web simplifiée avec l'affichage de la tension, les boutons et le joystick
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
     String html = R"rawliteral(
     <!DOCTYPE html>
@@ -62,27 +62,11 @@ void setup() {
             font-family: Arial, sans-serif;
             height: 100vh;
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-        }
-        .title {
-            text-align: center;
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
-            margin-top: 10px;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            padding: 0 20px;
-            position: relative;
-            top: 10px;
         }
         .battery {
+            position: absolute;
+            top: 20px;
+            left: 20px;
             background-color: #fff;
             border: 2px solid #ddd;
             padding: 10px;
@@ -94,6 +78,9 @@ void setup() {
             font-weight: bold;
         }
         .controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
             display: flex;
             gap: 10px; /* Espacement entre les boutons */
         }
@@ -102,21 +89,51 @@ void setup() {
             font-size: 16px;
             cursor: pointer;
         }
+        .joystick-container {
+            position: absolute;
+            top: 100px;
+            left: 20px;
+            width: 200px;
+            height: 200px;
+        }
+        .joystick {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-color: #ccc;
+            border: 3px solid #333;
+            position: absolute;
+            top: 0;
+            left: 0;
+            touch-action: none;
+        }
+        .stick {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #333;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
-    <div class="title">IHM Gyropode</div>
-    <div class="header">
-        <div class="battery" id="batteryDisplay">
-            <div class="battery-text">Tension: <span id="batteryVoltage">0.0V</span></div>
-        </div>
-        <div class="controls">
-            <button id="ledButton">Asser Actif</button>
-            <button id="powerButton">Power On</button>
+    <div class="battery" id="batteryDisplay">
+        <div class="battery-text">Tension: <span id="batteryVoltage">0.0V</span></div>
+    </div>
+    <div class="controls">
+        <button id="ledButton">Asser Actif</button>
+        <button id="powerButton">Power On</button>
+    </div>
+    <div class="joystick-container">
+        <div class="joystick">
+            <div class="stick"></div>
         </div>
     </div>
     <script>
-        // Fonction pour changer la couleur de la bordure en fonction de la tension
         function updateBatteryDisplay(voltage) {
             const batteryDisplay = document.getElementById('batteryDisplay');
             if (voltage > 9) {
@@ -128,16 +145,13 @@ void setup() {
             }
         }
 
-        // Charger la valeur de la tension envoyée par le serveur
         fetch('/get-battery').then(response => response.text()).then(data => {
             const voltage = parseFloat(data);
             document.getElementById('batteryVoltage').innerText = voltage + 'V';
-            updateBatteryDisplay(voltage);  // Mettre à jour la couleur en fonction de la tension
+            updateBatteryDisplay(voltage);
         });
 
-        // Fonction pour mettre à jour l'état des boutons
         function updateButtonStates() {
-            // Charger l'état du bouton "Asser"
             fetch('/get-asser').then(response => response.text()).then(data => {
                 const asserButton = document.getElementById('ledButton');
                 if (data === 'true') {
@@ -147,7 +161,6 @@ void setup() {
                 }
             });
 
-            // Charger l'état du bouton "Power"
             fetch('/get-power').then(response => response.text()).then(data => {
                 const powerButton = document.getElementById('powerButton');
                 if (data === 'true') {
@@ -158,21 +171,78 @@ void setup() {
             });
         }
 
-        // Charger l'état des boutons au démarrage
         updateButtonStates();
 
-        // Événements pour les boutons
         document.getElementById('ledButton').addEventListener('click', () => {
             fetch('/toggle-led').then(() => {
-                updateButtonStates(); // Mettre à jour les boutons après le clic
+                updateButtonStates();
             });
         });
 
         document.getElementById('powerButton').addEventListener('click', () => {
             fetch('/toggle-power').then(() => {
-                updateButtonStates(); // Mettre à jour les boutons après le clic
+                updateButtonStates();
             });
         });
+
+        const joystick = document.querySelector('.joystick');
+        const stick = document.querySelector('.stick');
+        let isDragging = false;
+
+        joystick.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            moveStick(e);
+        });
+
+        joystick.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        joystick.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                moveStick(e);
+            }
+        });
+
+        joystick.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            moveStick(e.touches[0]);
+        });
+
+        joystick.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+
+        joystick.addEventListener('touchmove', (e) => {
+            if (isDragging) {
+                moveStick(e.touches[0]);
+            }
+        });
+
+        function moveStick(e) {
+            const rect = joystick.getBoundingClientRect();
+            const joystickX = rect.left + rect.width / 2;
+            const joystickY = rect.top + rect.height / 2;
+            const x = e.clientX || e.touches[0].clientX;
+            const y = e.clientY || e.touches[0].clientY;
+            const dx = x - joystickX;
+            const dy = y - joystickY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const maxDistance = rect.width / 2;
+            const clampedDistance = Math.min(distance, maxDistance);
+            const angle = Math.atan2(dy, dx);
+            const stickX = Math.cos(angle) * clampedDistance;
+            const stickY = Math.sin(angle) * clampedDistance;
+            stick.style.transform = `translate(-50%, -50%) translate(${stickX}px, ${stickY}px)`;
+            sendJoystickData(stickX, stickY);
+        }
+
+        function sendJoystickData(x, y) {
+            fetch(`/joystick?x=${x}&y=${y}`)
+                .then(response => response.text())
+                .then(data => console.log(data))
+                .catch(error => console.error('Erreur:', error));
+        }
     </script>
 </body>
 </html>
@@ -201,15 +271,24 @@ void setup() {
     asserActif = !asserActif; // Inverser l'état du bouton "Asser"
     int ledState = digitalRead(ledPin);
     digitalWrite(ledPin, !ledState); // Inverser l'état de la LED
-    Serial.println("Bouton Asser Actif/Inactif pressé");
     request->send(200, "text/plain", "LED toggled");
   });
 
   // Activer/désactiver la puissance lorsque l'utilisateur clique sur le bouton
   server.on("/toggle-power", HTTP_GET, [](AsyncWebServerRequest *request){
     powerOn = !powerOn; // Inverser l'état du bouton "Power"
-    Serial.println("Bouton Power On/Off pressé");
     request->send(200, "text/plain", "Power toggled");
+  });
+
+  // Recevoir les données du joystick
+  server.on("/joystick", HTTP_GET, [](AsyncWebServerRequest *request){
+    String x = request->getParam("x")->value();
+    String y = request->getParam("y")->value();
+    Serial.print("Joystick X: ");
+    Serial.print(x);
+    Serial.print(", Y: ");
+    Serial.println(y);
+    request->send(200, "text/plain", "Joystick data received");
   });
 
   // Démarrage du serveur
