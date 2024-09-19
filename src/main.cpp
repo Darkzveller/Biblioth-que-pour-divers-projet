@@ -57,23 +57,32 @@ void setup() {
     <title>IHM Gyropode</title>
     <style>
         body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 100vh;
             margin: 0;
             background-color: #f0f0f0;
             font-family: Arial, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
         }
         .title {
-            margin-top: 20px;
+            text-align: center;
             font-size: 24px;
             font-weight: bold;
             color: #333;
-            text-align: center;
+            margin-top: 10px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 0 20px;
+            position: relative;
+            top: 10px;
         }
         .battery {
-            margin-top: 20px;
             background-color: #fff;
             border: 2px solid #ddd;
             padding: 10px;
@@ -85,7 +94,6 @@ void setup() {
             font-weight: bold;
         }
         .controls {
-            margin-top: 30px;
             display: flex;
             gap: 10px; /* Espacement entre les boutons */
         }
@@ -98,12 +106,14 @@ void setup() {
 </head>
 <body>
     <div class="title">IHM Gyropode</div>
-    <div class="battery" id="batteryDisplay">
-        <div class="battery-text">Tension: <span id="batteryVoltage">0.0V</span></div>
-    </div>
-    <div class="controls">
-        <button id="ledButton">Asser Actif</button>
-        <button id="powerButton">Power On</button>
+    <div class="header">
+        <div class="battery" id="batteryDisplay">
+            <div class="battery-text">Tension: <span id="batteryVoltage">0.0V</span></div>
+        </div>
+        <div class="controls">
+            <button id="ledButton">Asser Actif</button>
+            <button id="powerButton">Power On</button>
+        </div>
     </div>
     <script>
         // Fonction pour changer la couleur de la bordure en fonction de la tension
@@ -191,12 +201,14 @@ void setup() {
     asserActif = !asserActif; // Inverser l'état du bouton "Asser"
     int ledState = digitalRead(ledPin);
     digitalWrite(ledPin, !ledState); // Inverser l'état de la LED
+    Serial.println("Bouton Asser Actif/Inactif pressé");
     request->send(200, "text/plain", "LED toggled");
   });
 
   // Activer/désactiver la puissance lorsque l'utilisateur clique sur le bouton
   server.on("/toggle-power", HTTP_GET, [](AsyncWebServerRequest *request){
     powerOn = !powerOn; // Inverser l'état du bouton "Power"
+    Serial.println("Bouton Power On/Off pressé");
     request->send(200, "text/plain", "Power toggled");
   });
 
