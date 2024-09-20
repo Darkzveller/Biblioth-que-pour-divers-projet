@@ -3,7 +3,7 @@
 
 /* variable pour le calcul de l'angle */
 float TetaG, TetaGF, TetaW, Teta, Wteta;
-
+extern float raccourci_dt;
 extern float Te;  // période d'échantillonage en ms
 extern float Tau; // constante de temps du filtre en ms
 
@@ -27,7 +27,7 @@ void MPU6050::init()
         Serial.println("MPU6050 Found!");
     }
     mpu.setAccelerometerRange(MPU6050_RANGE_2_G);
-    mpu.setGyroRange(MPU6050_RANGE_500_DEG);
+    mpu.setGyroRange(MPU6050_RANGE_2000_DEG);
     A = 1 / (1 + Tau / Te);
     B = Tau / Te * A;
 }
@@ -38,7 +38,7 @@ double MPU6050::getPosAngulaireRad()
     mpu.getEvent(&a, &g, &temp);
     // Calcul de théta a l'aide de l'accélération mesurer
     // Javais mis un -1 mais la on dirati que ca fonctionne de la meme maniere
-    TetaG = (1) * atan2(a.acceleration.y, a.acceleration.x); // Permet de calculer l'angle Théta G avec un angle dans la valeur est entier relatif
+    TetaG = (-1) * atan2(a.acceleration.y, a.acceleration.x); // Permet de calculer l'angle Théta G avec un angle dans la valeur est entier relatif
     // Calcul du Théta filtrer
     TetaGF = A * TetaG + B * TetaGF;
 
@@ -62,6 +62,7 @@ double MPU6050::getPosAngulaireRad()
         Serial.println(" radians   ");
         Serial.println(" ");
     }
+    raccourci_dt = (-1) * g.gyro.z;
     return result = Teta;
 }
 void MPU6050::getPosAngulaireDegres()

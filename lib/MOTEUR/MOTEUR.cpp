@@ -5,8 +5,9 @@
 int pwmManager[12]{false};
 
 // Définition de la méthode init
-void moteur::init(int PINA, int PINB, int channel_pwm, int frequence, int resolution_bits, String Name_Motor)
+void moteur::init(int PINA, int PINB, int channel_pwm, int frequence, int resolution_bits,double saturation_pwm_pourcen, String Name_Motor)
 {
+    saturation_pwm_pourcent=saturation_pwm_pourcen;
     pinA = PINA;
     pinB = PINB;
     channelA = channel_pwm;
@@ -41,16 +42,16 @@ void moteur::init(int PINA, int PINB, int channel_pwm, int frequence, int resolu
 
 void moteur::setSpeed(int motorSpeed)// En pourcentage
 {
-    if (motorSpeed >= 100)
+    if (motorSpeed >= saturation_pwm_pourcent)
     {
-        motorSpeed = 100;
+        motorSpeed = saturation_pwm_pourcent;
     }
-    if (motorSpeed <= 0)
+    if (motorSpeed <= -saturation_pwm_pourcent)
     {
-        motorSpeed = 0;
+        motorSpeed = saturation_pwm_pourcent;
     }
    
-    speed = motorSpeed * (pow(2, resolution) - 1) / 100;
+    speed = motorSpeed * (pow(2, resolution) - 1) / saturation_pwm_pourcent;
 
     // speed = motorSpeed; // Met à jour la vitesse
 #ifdef COMMANDE_UNIPOLAIRE
@@ -68,7 +69,7 @@ void moteur::setSpeed(int motorSpeed)// En pourcentage
 
     if (DEBUG_MOTOR_VITESSE)
     {
-        Serial.printf("Le %s a une pwm de %d", nameMotor.c_str(), speed);
+        Serial.printf("Le %s pwm = %d Motorspeed %d", nameMotor.c_str(), speed,motorSpeed);
         Serial.println();
     }
 }

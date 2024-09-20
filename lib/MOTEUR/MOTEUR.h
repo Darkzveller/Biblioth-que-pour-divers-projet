@@ -14,11 +14,12 @@ private:
     int pinA, pinB;
     int channelA, channelB;
     int resolution;
+   double saturation_pwm_pourcent;
     String nameMotor;
 
 public:
     // Initialise le moteur avec le pin, le canal souhaiter, la fréquence souhaiter et la résolution
-    void init(int PINA, int PINB, int channel_pwm, int frequence, int resolution_bits, String Name_Motor);
+    void init(int PINA, int PINB, int channel_pwm, int frequence, int resolution_bits,double saturation_pwm_pourcen, String Name_Motor);
     void setSpeed(int motorSpeed);
     void stop();
 };

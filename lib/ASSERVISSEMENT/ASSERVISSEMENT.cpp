@@ -68,7 +68,8 @@ double asservissement::calcul_asserv_gyro(double consigne, double observation, i
   double integral = coeff_I * somme_integral_gyro;
 
   double commande = proportionnel + deriver + integral;
-
+  // Serial.printf("consigne %.5f observation %.5f erreur %.5f ", consigne, observation, erreur);
+  // Serial.printf("comamnde %.5f propoportionnel %.5f deriver %.5f", commande, proportionnel, deriver);
   erreur_prec_gyro = erreur;
 
   if (commande > 0)
@@ -77,6 +78,10 @@ double asservissement::calcul_asserv_gyro(double consigne, double observation, i
     {
       sortie = saturation;
     }
+    else
+    {
+      sortie = commande;
+    }
   }
   else
   {
@@ -84,9 +89,17 @@ double asservissement::calcul_asserv_gyro(double consigne, double observation, i
     {
       sortie = -saturation;
     }
+    else
+    {
+      sortie = commande;
+    }
   }
+  // if(DEBUG_SORTIE)
+  // Serial.printf(" Sortie %.5f ", sortie);
+  // Serial.println();
+
   // sortie =sortie *resolution_pwm_bits;
-  
+
   return sortie;
 }
 
