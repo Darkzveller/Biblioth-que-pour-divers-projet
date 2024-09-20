@@ -23,7 +23,6 @@ private:
 public:
 
     double calcul_asserv(double consigne, double observation, int resolution_pwm_bits, double coeff_P, double dt, double coeff_D, double coeff_I, double integral_limit);
-    double calcul_asserv_gyro(double consigne, double observation, int resolution_pwm_bits, double coeff_P, double dt, double coeff_D, double coeff_I, double integral_limit, double saturation);
-
+    double calcul_asserv_gyro(double consigne, double observation, int resolution_pwm_bits, double coeff_P, double dt, double coeff_D, double coeff_I,double Te, double integral_limit, double saturation);
 };
 #endif

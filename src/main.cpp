@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "Variable.h"
 #include "ServeurWebGyropode.h"
 #include "MPU6050.h"
 #include "EncoderManager.h"
@@ -17,20 +18,8 @@ asservissement asser_gauche;
 asservissement gyro;
 
 char FlagCalcul = 0;
-float Te = 7.5;  // période d'échantillonage en ms
-float Tau = 400; // constante de temps du filtre en ms
-const int8_t resolution = 8;
-//Coefficient moteur Droit
-int Kp_droit = 3;
-int Kd_droit = 0;
-double consigne_droit;
-//Coefficient moteur Gauche
-int Kp_gauche = 3;
-int Kd_gauche = 0;
-double theta;
-float raccourci_dt;
-// coefficient du filtre
-float A, B;
+float Te = 5;    // période d'échantillonage en ms
+float Tau = 200; // constante de temps du filtre en ms
 
 void controle(void *parameters)
 {
@@ -44,9 +33,17 @@ void controle(void *parameters)
         // float x = 100 * (asser_droit.calcul_asserv_gyro(consigne_droit, theta, resolution, Kp_droit, raccourci_dt, Kd_droit, 0, 0, 0.45));
         // float y = 100 * (asser_gauche.calcul_asserv_gyro(consigne_droit, theta, resolution, Kp_gauche, raccourci_dt, Kd_gauche, 0, 0, 0.45));
 
-        // Serial.printf(" x %f y %f\n", x,y);
-        moteur_droit.setSpeed(100 * (asser_droit.calcul_asserv_gyro(consigne_droit, theta, resolution, Kp_droit, raccourci_dt, Kd_droit, 0, 0, 0.45)));
-        moteur_gauche.setSpeed(100 * (asser_gauche.calcul_asserv_gyro(consigne_droit, theta, resolution, Kp_gauche, raccourci_dt, Kd_gauche, 0, 0, 0.45)));
+        // // Serial.printf(" x %f y %f\n", x,y);
+
+        // moteur_droit.setSpeed(50 + 100 * (asser_droit.calcul_asserv_gyro(consigne_angulaire, theta, resolution, Kp_moteur * COEFF_ROUE_DROITE, raccourci_dt, Kd_moteur * COEFF_ROUE_DROITE, 0.001, Te,0.1, 0.45)));
+        // moteur_gauche.setSpeed(50 + 100 * (asser_gauche.calcul_asserv_gyro(consigne_angulaire, theta, resolution, Kp_moteur * COEFF_ROUE_GAUCHE, raccourci_dt, Kd_moteur * COEFF_ROUE_GAUCHE, 0.001, Te,0.1, 0.45)));
+        float pwm = 50 + 100 * (asser_droit.calcul_asserv_gyro(consigne_angulaire, theta, resolution, Kp_moteur, raccourci_dt, Kd_moteur, 0.001, Te, 0.1, 0.45));
+
+        moteur_droit.setSpeed(pwm * COEFF_ROUE_DROITE);
+        moteur_gauche.setSpeed(pwm * COEFF_ROUE_GAUCHE);
+
+        // moteur_droit.setSpeed(compDroit);
+        // moteur_gauche.setSpeed(compGauche);
         FlagCalcul = 1;
         vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(Te));
     }
@@ -60,13 +57,16 @@ void setup()
     serveur_web_gyropode();
     encoder_droit.init("encoder droite", 65, 712);  // Initialiser les encodeurs
     encoder_gauche.init("encoder gauche", 65, 712); // Initialiser les encodeurs
-    moteur_droit.init(19, 18, 0, 20000, resolution, 50, "moteur droit");
-    moteur_gauche.init(16, 17, 2, 20000, resolution, 50, "moteur gauche");
+    moteur_droit.init(19, 18, 0, 20000, resolution, "moteur droit");
+    moteur_gauche.init(16, 17, 2, 20000, resolution, "moteur gauche");
 
+    Serial.print("Fréquence d'horloge actuelle : ");
+    Serial.print(getCpuFrequencyMhz());
+    Serial.println(" MHz");
     MPU.init();
+
     pinMode(27, OUTPUT);
     digitalWrite(27, true);
-    delay(20000);
     Serial.printf("Go\n");
 
     xTaskCreate(
@@ -126,6 +126,31 @@ void reception(char ch)
         if (commande == "Te")
         {
             Te = valeur.toInt();
+        }
+        if (commande == "Kp_moteur")
+        {
+            Serial.printf("Kp_moteur");
+            Kp_moteur = valeur.toDouble();
+        }
+        if (commande == "Kd_moteur")
+        {
+            Serial.printf("Kd_moteur");
+            Kd_moteur = valeur.toDouble();
+        }
+        if (commande == "consigne_angulaire")
+        {
+            Serial.printf("consigne_angulaire");
+            consigne_angulaire = valeur.toDouble();
+        }
+        if (commande == "compDroit")
+        {
+            Serial.printf("compDroit");
+            compDroit = valeur.toDouble();
+        }
+        if (commande == "compGauche")
+        {
+            Serial.printf("compGauche");
+            compGauche = valeur.toDouble();
         }
 
         chaine = "";

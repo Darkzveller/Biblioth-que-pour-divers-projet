@@ -5,22 +5,23 @@
 int pwmManager[12]{false};
 
 // Définition de la méthode init
-void moteur::init(int PINA, int PINB, int channel_pwm, int frequence, int resolution_bits,double saturation_pwm_pourcen, String Name_Motor)
+void moteur::init(int PINA, int PINB, int channel_pwm, int frequence, int resolution_bits, String Name_Motor)
 {
-    saturation_pwm_pourcent=saturation_pwm_pourcen;
     pinA = PINA;
     pinB = PINB;
     channelA = channel_pwm;
     nameMotor = Name_Motor;
     resolution = resolution_bits;
-
+    speed = (pow(2, resolution) - 1) / 2;
+    deltaSpeed = speed;
+   
 #ifdef COMMANDE_UNIPOLAIRE
     ledcSetup(channelA, frequence, resolution);
     ledcAttachPin(pinA, channelA);
     ledcWrite(channelA, speed);
     channelB = channelA + 1;
     ledcAttachPin(pinB, channelB);
-    ledcWrite(channelA, deltaSpeed);
+    ledcWrite(channelB, deltaSpeed);
 
 #endif
 #ifdef COMMANDE_BIPOLAIRE
@@ -40,18 +41,18 @@ void moteur::init(int PINA, int PINB, int channel_pwm, int frequence, int resolu
     }
 }
 
-void moteur::setSpeed(int motorSpeed)// En pourcentage
+void moteur::setSpeed(int motorSpeed) // En pourcentage
 {
-    if (motorSpeed >= saturation_pwm_pourcent)
+    if (motorSpeed >= 95)
     {
-        motorSpeed = saturation_pwm_pourcent;
+        motorSpeed = 95;
     }
-    if (motorSpeed <= -saturation_pwm_pourcent)
+    if (motorSpeed <= 5)
     {
-        motorSpeed = saturation_pwm_pourcent;
+        motorSpeed = 5;
     }
-   
-    speed = motorSpeed * (pow(2, resolution) - 1) / saturation_pwm_pourcent;
+
+    speed = motorSpeed * (pow(2, resolution) - 1) / 100;
 
     // speed = motorSpeed; // Met à jour la vitesse
 #ifdef COMMANDE_UNIPOLAIRE
@@ -69,7 +70,7 @@ void moteur::setSpeed(int motorSpeed)// En pourcentage
 
     if (DEBUG_MOTOR_VITESSE)
     {
-        Serial.printf("Le %s pwm = %d Motorspeed %d", nameMotor.c_str(), speed,motorSpeed);
+        Serial.printf("Le %s pwm = %d Motorspeed %d", nameMotor.c_str(), speed, motorSpeed);
         Serial.println();
     }
 }

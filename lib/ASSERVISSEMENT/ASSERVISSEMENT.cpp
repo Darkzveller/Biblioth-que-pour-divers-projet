@@ -44,7 +44,7 @@ double asservissement::calcul_asserv(double consigne, double observation, int re
   return sortie;
 }
 
-double asservissement::calcul_asserv_gyro(double consigne, double observation, int resolution_pwm_bits, double coeff_P, double dt, double coeff_D, double coeff_I, double integral_limit, double saturation)
+double asservissement::calcul_asserv_gyro(double consigne, double observation, int resolution_pwm_bits, double coeff_P, double dt, double coeff_D, double coeff_I,double Te, double integral_limit, double saturation)
 {
   double sortie;
   double scale;
@@ -56,7 +56,7 @@ double asservissement::calcul_asserv_gyro(double consigne, double observation, i
 
   double deriver = coeff_D * dt;
 
-  somme_integral_gyro += erreur * dt;
+  somme_integral_gyro += erreur * Te;
   if (somme_integral_gyro > integral_limit)
   {
     somme_integral_gyro = integral_limit;
