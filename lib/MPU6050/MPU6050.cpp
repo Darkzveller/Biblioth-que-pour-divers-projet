@@ -59,12 +59,12 @@ double MPU6050::getPosAngulaireRad()
         Serial.print(TetaW);
         Serial.print(" ");
         Serial.print(Teta);
-        Serial.println(" radians   ");
+    
         Serial.println(" ");
     }
-    raccourci_dt = (-1) * g.gyro.z;
-    return result = Teta;
-}
+        raccourci_dt = (-1) * g.gyro.z;
+        return result = Teta;
+    }
 void MPU6050::getPosAngulaireDegres()
 {
     double degres, val_rad;

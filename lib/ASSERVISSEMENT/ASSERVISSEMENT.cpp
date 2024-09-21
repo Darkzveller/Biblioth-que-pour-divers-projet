@@ -44,7 +44,7 @@ double asservissement::calcul_asserv(double consigne, double observation, int re
   return sortie;
 }
 
-double asservissement::calcul_asserv_gyro(double consigne, double observation, int resolution_pwm_bits, double coeff_P, double dt, double coeff_D, double coeff_I,double Te, double integral_limit, double saturation)
+double asservissement::calcul_asserv_gyro(double consigne, double observation, int resolution_pwm_bits, double coeff_P,  double coeff_D, double coeff_I,double dt, double integral_limit, double saturation)
 {
   double sortie;
   double scale;
@@ -54,9 +54,22 @@ double asservissement::calcul_asserv_gyro(double consigne, double observation, i
 
   double proportionnel = erreur * coeff_P;
 
-  double deriver = coeff_D * dt;
-
-  somme_integral_gyro += erreur * Te;
+  // double deriver = coeff_D * dt; // Méthode Lechenadec
+  double deriver = coeff_D * (erreur - erreur_prec_gyro)/dt ; // Exemple simple de calcul dérivée
+  // Serial.print(dt);
+  // Serial.printf(" "); Serial.print(consigne);
+  // Serial.printf(" ");
+  // Serial.print(observation);
+  // Serial.printf(" ");
+  // Serial.print(erreur);
+  // Serial.printf(" ");
+  // Serial.print(erreur_prec_gyro);
+  // Serial.printf(" ");
+  // Serial.printf("%.10f",deriver);
+  // Serial.printf(" ");
+  // Serial.print(jsp);
+  // Serial.println();
+  somme_integral_gyro += erreur * dt;
   if (somme_integral_gyro > integral_limit)
   {
     somme_integral_gyro = integral_limit;
@@ -68,9 +81,6 @@ double asservissement::calcul_asserv_gyro(double consigne, double observation, i
   double integral = coeff_I * somme_integral_gyro;
 
   double commande = proportionnel + deriver + integral;
-  // Serial.printf("consigne %.5f observation %.5f erreur %.5f ", consigne, observation, erreur);
-  // Serial.printf("comamnde %.5f propoportionnel %.5f deriver %.5f", commande, proportionnel, deriver);
-  erreur_prec_gyro = erreur;
 
   if (commande > 0)
   {
@@ -99,6 +109,7 @@ double asservissement::calcul_asserv_gyro(double consigne, double observation, i
   // Serial.println();
 
   // sortie =sortie *resolution_pwm_bits;
+  erreur_prec_gyro = erreur;
 
   return sortie;
 }
