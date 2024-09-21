@@ -15,7 +15,7 @@ double Kp_moteur = 0;
 double Kd_moteur = 0;
 
 double Ki_moteur = 0;
-
+double limit_integral=0;
 double consigne_angulaire = -0.0328;
 double theta;
 float raccourci_dt;

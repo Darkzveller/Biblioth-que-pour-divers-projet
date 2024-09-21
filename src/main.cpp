@@ -31,7 +31,7 @@ void controle(void *parameters)
     {
         theta = MPU.getPosAngulaireRad();
 
-        pwm = 50 + 100 * (asser_droit.calcul_asserv_gyro(consigne_angulaire, theta, resolution, Kp_moteur, Kd_moteur, Ki_moteur, Te, 0, 0.45));
+        pwm = 50 + 100 * (asser_droit.calcul_asserv_gyro(consigne_angulaire, theta, resolution, Kp_moteur, Kd_moteur, Ki_moteur, Te, limit_integral, 0.45));
         // Serial.println(pwm);
         if (pwm < 50)
         {
@@ -145,7 +145,11 @@ void reception(char ch)
         if (commande == "Ki_moteur")
         {
             // Serial.printf("Ki_moteur");
-            Kp_moteur = valeur.toDouble();
+            Ki_moteur = valeur.toDouble();
+        }   if (commande == "limit_integral")
+        {
+            // Serial.printf("Ki_moteur");
+            limit_integral = valeur.toDouble();
         }
         if (commande == "consigne_angulaire")
         {
